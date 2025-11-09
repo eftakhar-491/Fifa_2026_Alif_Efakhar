@@ -41,7 +41,7 @@ export const config = {
      * - public folder
      */
     // "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-
+    "/",
     "/login",
     "/register",
     "/api/auth",
