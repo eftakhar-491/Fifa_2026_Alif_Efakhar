@@ -8,22 +8,9 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
-        const pathname = req.nextUrl.pathname;
-
-        // Allow access to public routes
-        const isPublicPath =
-          pathname === "/" ||
-          pathname.startsWith("/login") ||
-          pathname.startsWith("/register") ||
-          pathname.startsWith("/api/auth");
-
-        // If it's a public path, allow access
-        if (isPublicPath) {
-          return true;
-        }
-
-        // For protected routes, require authentication
+      authorized: ({ token }) => {
+        // If there's a token, user is authenticated
+        // This proxy only runs on protected routes (excluded from matcher)
         return !!token;
       },
     },
@@ -33,17 +20,12 @@ export default withAuth(
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
+     * Match all request paths EXCEPT:
+     * - Public routes: /, /login, /register
+     * - API routes: /api
+     * - Next.js internals: _next/static, _next/image
+     * - Static files: images, favicon, etc.
      */
-    // "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-    "/",
-    "/login",
-    "/register",
-    "/api/auth",
+    "/((?!api|_next/static|_next/image|favicon.ico|login|register|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).+)",
   ],
 };
