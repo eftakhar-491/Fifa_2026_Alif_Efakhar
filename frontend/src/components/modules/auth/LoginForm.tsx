@@ -1,6 +1,8 @@
 "use client";
 
-import { FieldValues, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -14,36 +16,56 @@ import {
 } from "@/components/ui/form";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { login } from "@/actions/auth";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-// type LoginFormValues = {
-//   email: string;
-//   password: string;
-// };
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(6, "Password must be at least 6 characters"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const form = useForm<FieldValues>({
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (values: FieldValues) => {
+  const onSubmit = async (values: LoginFormValues) => {
+    setIsLoading(true);
     try {
-      // const res = await login(values);
-      // if (res?.id) {
-      //   toast.success("User Logged in Successfully");
-      // } else {
-      //   toast.error("User Login Failed");
-      // }
-      signIn("credentials", {
-        ...values,
-        callbackUrl: "/dashboard",
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
       });
+
+      if (result?.error) {
+        toast.error(result.error || "Invalid email or password");
+      } else if (result?.ok) {
+        toast.success("Logged in successfully");
+        router.push("/");
+        router.refresh();
+      }
     } catch (err) {
       console.error(err);
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,8 +80,8 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="space-y-6 w-full max-w-md bg-white p-8 rounded-lg shadow-md">
+    <div className="flex justify-center items-center min-h-screen bg-background">
+      <div className="space-y-6 w-full max-w-md bg-card p-8 rounded-lg border shadow-md">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -105,25 +127,25 @@ export default function LoginForm() {
               )}
             />
 
-            <Button type="submit" className="w-full mt-2">
-              Login
+            <Button type="submit" className="w-full mt-2" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
 
             <div className="flex items-center justify-center space-x-2">
-              <div className="h-px w-16 bg-gray-300" />
-              <span className="text-sm text-gray-500">or continue with</span>
-              <div className="h-px w-16 bg-gray-300" />
+              <div className="h-px w-16 bg-border" />
+              <span className="text-sm text-muted-foreground">or continue with</span>
+              <div className="h-px w-16 bg-border" />
             </div>
           </form>
         </Form>
         {/* Social Login Buttons */}
         <div className="flex flex-col gap-3 mt-4">
-          <Button
+          {/* <Button
             variant="outline"
             className="flex items-center justify-center gap-2"
             onClick={() => handleSocialLogin("github")}
           >
-            {/* GitHub */}
+           
             <Image
               src="https://img.icons8.com/ios-glyphs/24/github.png"
               alt="GitHub"
@@ -132,7 +154,7 @@ export default function LoginForm() {
               height={20}
             />
             Login with GitHub
-          </Button>
+          </Button> */}
 
           <Button
             variant="outline"
@@ -150,9 +172,9 @@ export default function LoginForm() {
             Login with Google
           </Button>
         </div>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Don’t have an account?{" "}
-          <Link href="/register" className="text-blue-500 hover:underline">
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Don't have an account?{" "}
+          <Link href="/register" className="text-primary hover:underline">
             Register
           </Link>
         </p>
