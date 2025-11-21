@@ -13,6 +13,11 @@
 
 export interface IEnComponentProps {
   className?: string;
+  style?: {
+    display?: string;
+    flexDirection?: string;
+    justifyContent?: string;
+  };
 }
 
 export interface IComponent {
@@ -37,6 +42,26 @@ export class EnComponent {
     this.name = name;
     this.element = element;
     this.children = [];
+  }
+  static fromDBData(data: any): EnComponent {
+    // Create the new EnComponent instance
+    const component = new EnComponent(data.name, data.element);
+    component.$$en = data.$$en;
+
+    // Rehydrate children, if any
+    if (data.children && Array.isArray(data.children)) {
+      component.children = data.children.map((child: any) => {
+        // Check if the child is a string or another component
+        if (typeof child === "string") {
+          return child;
+        } else {
+          // Recreate the child as an EnComponent instance
+          return EnComponent.fromDBData(child);
+        }
+      });
+    }
+
+    return component;
   }
   findComponentById(id: string, visited = new Set()): IComponent | null {
     if (visited.has(this)) return null;
