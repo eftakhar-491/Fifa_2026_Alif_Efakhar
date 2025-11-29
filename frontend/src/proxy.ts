@@ -26,6 +26,6 @@ export const config = {
      * - Next.js internals: _next/static, _next/image
      * - Static files: images, favicon, etc.
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|login|register|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).+)",
+    // "/((?!api|_next/static|_next/image|favicon.ico|login|register|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).+)",
   ],
 };
