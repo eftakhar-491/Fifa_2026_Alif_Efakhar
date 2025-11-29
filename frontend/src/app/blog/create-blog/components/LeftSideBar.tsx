@@ -29,7 +29,6 @@ const LeftSideBar: React.FC<LeftSideBarProps> = ({
   navItems,
 }) => {
   const root = new EnComponent("Root", "div");
-  root.print();
   const com1 = root.createComponent("Header", {
     parentId: root.$$en,
     element: "header",
@@ -40,11 +39,15 @@ const LeftSideBar: React.FC<LeftSideBarProps> = ({
     element: "header",
     props: { className: "header-class" },
   });
+  root.addStyle(com2.$$en, "background-color: red;");
   root.createComponent("Header", {
     parentId: com1.$$en,
     element: "header",
     props: { className: "header-class" },
   });
+
+  console.log("=== Regular print ===");
+  root.print();
 
   return (
     <>
